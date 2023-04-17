@@ -22,6 +22,7 @@ The functons "train_ddqn" and "train_dddqn" follow the same logic as the functio
 
 ### Model Results
 
+DQN had the best result followed by double DQN, with dueling double DQN as the worst performer.
 
 
 ### Final conclusion

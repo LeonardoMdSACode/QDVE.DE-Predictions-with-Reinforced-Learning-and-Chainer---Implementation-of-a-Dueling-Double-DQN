@@ -46,7 +46,7 @@ plt.ylabel('Price')
 plt.title(f'{stock} Stock Price')
 plt.show()
 
-date_split = '2023-01-01'
+date_split = '2022-12-01'
 train = data[:date_split]
 test = data[date_split:]
 print(train.shape, test.shape)
@@ -163,6 +163,8 @@ def train_dqn(env, model_file):
     total_step = 0
     total_rewards = []
     total_losses = []
+    best_reward = -np.inf
+    saved_model = None
       
     start = time.time()
     for epoch in range(epoch_num):
@@ -172,7 +174,6 @@ def train_dqn(env, model_file):
         done = False
         total_reward = 0
         total_loss = 0
-        best_reward = float('-inf')       
          
         while not done and step < step_max:
 
@@ -215,10 +216,11 @@ def train_dqn(env, model_file):
                         loss.backward()
                         optimizer.update()
                         
-                        if total_reward >= best_reward:
-                            print(f'Saving model with reward {total_reward} at step {total_step}')
+                        # Save the model only when the reward increases
+                        if total_reward > best_reward:
+                            print(f'Saved the model with reward {total_reward}')
                             best_reward = total_reward
-                            chainer.serializers.save_npz(model_file, Q)                                      
+                            chainer.serializers.save_npz(model_file, Q)                                     
                             
                 if total_step % update_q_freq == 0:
                     Q_ast = copy.deepcopy(Q)
