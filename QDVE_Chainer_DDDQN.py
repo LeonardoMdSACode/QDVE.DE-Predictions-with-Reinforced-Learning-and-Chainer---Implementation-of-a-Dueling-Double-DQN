@@ -19,6 +19,9 @@ from chainer import serializers
 from mpl_finance import candlestick_ohlc
 import yfinance as yf
 
+import warnings
+warnings.filterwarnings("ignore")
+
 stock = 'QDVE.DE'
 data = yf.download(stock, period="max")
 print(data)
