@@ -28,7 +28,7 @@ The functons "train_ddqn" and "train_dddqn" follow the same logic as the functio
 
 DQN had the best result followed by double DQN, with dueling double DQN as the worst performer. As such the DQN function saves the model to current directory so you can have the highest reward model saved.
 
-The DQN model reached a peak total reward of 354.
+The DQN model reached a peak total reward of 421.
 We can check the loss and rewards over the training duration:
 ![DQN_loss_reward](imgs/reward-loss-DQN.png)
 The next graph shows the train and test dataset split used on DQN training, and the total profits of 14:
@@ -46,7 +46,3 @@ Note the 5 profits with this model.
 ### Final conclusion
 
 Is it true that a simple linear regression has better performance than most of the more complex models? Probably, but I believe it is a matter of time till we optimize and speed up the process of finding out the best performing neural networks for given use case.
-
-
-
-
