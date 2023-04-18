@@ -8,8 +8,12 @@ The script defines an environment called "Environment1", which represents the fi
 
 Two very important libraries are Chainer (a deep learning library) and Yahoo Finance (yfinance). Thanks to Chainer we are able to build a strong DQN with reinforced learning and thanks to yfinance we can download the data of the stock prices.
 
+![Fullstock](imgs/qdve-price-full-time.png)
+
 ### Understanding the code
 
+The data is first split into train and test datasets.
+![train/test split](imgs/train-and-test-split.png)
 The "Environment1" class has a constructor that takes in the historical data and a parameter called "history_t". The "history_t" parameter specifies the number of previous closing prices that the environment keeps in memory. The "reset" method of the class resets the environment to its initial state, and the "step" method takes in an action and returns the next state, reward, and whether the episode is done or not.
 
 The "train_dqn" function takes in an instance of the "Environment1" class. It defines the "Q_Network" class, which is a neural network that takes in the current state (which includes the position value and the previous closing prices) and outputs the Q-values for the available actions (buy, sell, or hold). The "Q_Network" class has three fully connected layers with ReLU activation functions. The function then initializes two instances of the Q_Network class, Q and Q_ast, where Q_ast is a copy of Q.
@@ -22,8 +26,22 @@ The functons "train_ddqn" and "train_dddqn" follow the same logic as the functio
 
 ### Model Results
 
-DQN had the best result followed by double DQN, with dueling double DQN as the worst performer.
+DQN had the best result followed by double DQN, with dueling double DQN as the worst performer. As such the DQN function saves the model to current directory so you can have the highest reward model saved.
 
+The DQN model reached a peak total reward of 354.
+We can check the loss and rewards over the training duration:
+![DQN_loss_reward](imgs/reward-loss-DQN.png)
+The next graph shows the train and test dataset split used on DQN training, and the total profits of 14:
+![DQN_train_test](imgs/train-test-profits-DQN.png)
+
+We can check the same graphs for DDQN and DDDQN.
+![DDQN_loss_reward](imgs/reward-loss-DDQN.png)
+![DDQN_train_test](imgs/train-test-profits-DDQN.png)
+Note the 5 profits with this model.
+
+![DDDQN_loss_reward](imgs/reward-loss-DDDQN.png)
+![DDDQN_train_test](imgs/train-test-profits-DDDQN.png)
+0 profits with the dueling double DQN model.
 
 ### Final conclusion
 

@@ -14,6 +14,7 @@ import copy
 import chainer
 import chainer.functions as F
 import chainer.links as L
+from chainer import serializers
 
 from mpl_finance import candlestick_ohlc
 import yfinance as yf
@@ -70,7 +71,7 @@ class Environment1:
     
     def __init__(self, data, history_t=90):
         self.data = data
-        self.history_t = history_t       
+        self.history_t = history_t
         self.reset()
         
     def reset(self):
@@ -121,6 +122,9 @@ for _ in range(3):
     pact = np.random.randint(3)
     print(env.step(pact))
 
+def save_model(Q, filename):
+    serializers.save_npz(filename, Q)
+    
 def train_dqn(env, model_file):
 
     class Q_Network(chainer.Chain):
@@ -146,7 +150,7 @@ def train_dqn(env, model_file):
     optimizer = chainer.optimizers.Adam()
     optimizer.setup(Q)
 
-    epoch_num = 30
+    epoch_num = 120
     step_max = len(env.data)-1
     memory_size = 200
     batch_size = 20
@@ -214,13 +218,7 @@ def train_dqn(env, model_file):
                         loss = F.mean_squared_error(q, target)
                         total_loss += loss.data
                         loss.backward()
-                        optimizer.update()
-                        
-                        # Save the model only when the reward increases
-                        if total_reward > best_reward:
-                            print(f'Saved the model with reward {total_reward}')
-                            best_reward = total_reward
-                            chainer.serializers.save_npz(model_file, Q)                                     
+                        optimizer.update()                                  
                             
                 if total_step % update_q_freq == 0:
                     Q_ast = copy.deepcopy(Q)
@@ -230,6 +228,21 @@ def train_dqn(env, model_file):
             # epsilon
             if epsilon > epsilon_min and total_step > start_reduce_epsilon:
                 epsilon -= epsilon_decrease
+            
+            # logging
+            total_rewards.append(total_reward)
+            total_losses.append(total_loss)
+            if total_reward > best_reward:
+                best_reward = total_reward
+                if saved_model is not None:
+                    os.remove(saved_model)
+                print('epoch:', epoch,
+                      'total_step:', total_step,
+                      'total_reward:', total_reward,
+                      'Q_loss:', total_loss,
+                      'epsilon:', epsilon)
+                saved_model = 'best_model.npz'
+                serializers.save_npz(saved_model, Q)
 
             # next step
             total_reward += reward
@@ -360,7 +373,7 @@ def train_ddqn(env):
     optimizer = chainer.optimizers.Adam()
     optimizer.setup(Q)
 
-    epoch_num = 30
+    epoch_num = 60
     step_max = len(env.data)-1
     memory_size = 200
     batch_size = 50
@@ -503,7 +516,7 @@ def train_dddqn(env):
     optimizer = chainer.optimizers.Adam()
     optimizer.setup(Q)
 
-    epoch_num = 30
+    epoch_num = 60
     step_max = len(env.data)-1
     memory_size = 200
     batch_size = 50
@@ -605,25 +618,3 @@ Q, total_losses, total_rewards = train_dddqn(Environment1(train))
 plot_loss_reward(total_losses, total_rewards)
 
 plot_train_test_by_q(Environment1(train), Environment1(test), Q, 'Dueling Double DQN')
-
-# Train the DQN model
-env = Environment1(train)
-model = train_dqn(env)
-
-# Use the trained model to predict the stock price for the next 6 months
-prediction = []
-state = env.reset()
-for i in range(6 * 30):
-    predicted_price_change = env.predict()
-    prediction.append(predicted_price_change)
-    state, _, _ = env.step(predicted_price_change)
-
-# Convert the predicted price changes to actual stock prices
-last_price = test.iloc[0]['Close']
-predicted_prices = [last_price]
-for p in prediction:
-    last_price = last_price * (1 + p)
-    predicted_prices.append(last_price)
-
-# Print the predicted stock prices for the next 6 months
-print(predicted_prices[-180:])
